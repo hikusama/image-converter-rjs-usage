@@ -3,6 +3,8 @@
 
 <head>
     <title>Image Converter</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="description" content="Convert your images to WEBP, PNG, or JPG with options to fit, crop, and remove backgrounds.">
     <style>
         body {
             font-family: Arial;
@@ -63,8 +65,8 @@
                 <option value="transparent">Transparent (PNG/WEBP only)</option>
             </select>
 
-            <label>
-                <input type="checkbox" name="remove_bg">
+            <label for="remove_bg" style="display: flex; gap: 1rem; align-items: center; justify-content: center;">
+                <input type="checkbox" name="remove_bg" id="remove_bg">
                 Remove Image Background (requires rembg)
             </label>
 

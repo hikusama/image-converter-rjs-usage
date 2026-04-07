@@ -58,6 +58,10 @@ def index():
         transparent = bg_choice == "transparent"
 
         is_single_file = len(files) == 1
+        if len(files) == 0:
+            return "No files uploaded", 400
+        elif len(files) > 3:
+            return "Maximum 3 files allowed", 400
         if is_single_file:
             file = files[0]
             if not file or not file.filename:
