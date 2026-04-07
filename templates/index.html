@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Image Converter</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #111;
+            color: white;
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        .box {
+            background: #222;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            margin: auto;
+        }
+
+        input,
+        select,
+        button {
+            margin: 10px;
+            padding: 10px;
+            width: 90%;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            background: #00c853;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <img src="{{ url_for('static', filename='monyet.png') }}" style="height: 9rem;" alt="">
+        <h2>Image Converter</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="images" multiple required>
+
+            <select name="format">
+                <option value="webp">WEBP</option>
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+            </select>
+
+            <select name="mode">
+                <option value="fit">Fit on Canvas 800x800</option>
+                <option value="crop">Crop to Square 800x800</option>
+            </select>
+
+            <label for="bg">Background:</label>
+            <select name="bg">
+                <option value="white">White</option>
+                <option value="transparent">Transparent (PNG/WEBP only)</option>
+            </select>
+
+            <label>
+                <input type="checkbox" name="remove_bg">
+                Remove Image Background (requires rembg)
+            </label>
+
+            <button type="submit">Convert & Download</button>
+        </form>
+    </div>
+
+</body>
+
+</html>
