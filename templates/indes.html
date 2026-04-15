@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Converter</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <style>
+        /* Reset */
+        /* BACKDROP */
+        .plan img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            opacity: 0.85;
+            transition: 0.3s ease;
+        }
+
+        /* subtle glow on hover */
+        .plan:hover img {
+            opacity: 1;
+            transform: scale(1.03);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            inset: 0;
+            background: radial-gradient(circle at top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.95));
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* CARD */
+        .modal-content {
+            background: linear-gradient(145deg, #111, #0a0a0a);
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 95%;
+            max-width: 600px;
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 20px 60px rgba(0, 0, 0, 0.9),
+                0 0 40px rgba(0, 200, 83, 0.15);
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* TITLE */
+        .modal-content h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .modal-content p.subtitle {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        /* PLANS GRID */
+        .plans {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* PLAN CARD */
+        .plan {
+            flex: 1;
+            background: linear-gradient(145deg, #1a1a1a, #121212);
+            border-radius: 16px;
+            padding: 25px 15px;
+            transition: all 0.25s ease;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* HOVER EFFECT */
+        .plan:hover {
+            transform: translateY(-8px) scale(1.03);
+            border: 1px solid rgba(0, 200, 83, 0.5);
+            box-shadow: 0 15px 40px rgba(0, 200, 83, 0.2);
+        }
+
+        /* BEST PLAN TAG */
+        .plan:nth-child(2)::before {
+            content: "MOST POPULAR";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00c853;
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* TEXT */
+        .plan h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .plan p {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* BUTTON */
+        .plan button {
+            background: linear-gradient(90deg, #00c853, #00b140);
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .plan button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 200, 83, 0.4);
+        }
+
+        /* CANCEL BUTTON */
+        .modal-content>button {
+            margin-top: 25px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #aaa;
+        }
+
+        .modal-content>button:hover {
+            color: #fff;
+            border-color: #fff;
+        }
+
+        /* ANIMATION */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* MOBILE */
+        @media (max-width: 600px) {
+            .plans {
+                flex-direction: column;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #0c0c0f;
+            color: #fff;
+            scroll-behavior: smooth;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero iframe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            filter: brightness(0.55) blur(1px);
+            z-index: -2;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 850px;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            line-height: 1.2;
+            text-shadow: 0 6px 25px rgba(0, 0, 0, 0.7);
+        }
+
+        .hero p {
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 45px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #00c853, #00b140);
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0, 200, 83, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.08);
+            box-shadow: 0 15px 40px rgba(0, 200, 83, 0.6);
+            background: linear-gradient(90deg, #00b140, #009e36);
+        }
+
+        /* FORM SECTION */
+        .form-section {
+            padding: 120px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0c0c0f;
+            min-height: 100vh;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 50px 35px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .form-container img {
+            height: 90px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.7));
+        }
+
+        .form-container h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #00c853;
+            font-weight: 700;
+        }
+
+        input[type="file"],
+        select,
+        button {
+            width: 100%;
+            padding: 14px 16px;
+            margin: 10px 0;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="file"] {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        select {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        input[type="file"]:hover,
+        select:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin: 15px 0 5px;
+            font-weight: 500;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(90deg, #00c853, #00b140);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 200, 83, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 200, 83, 0.6);
+            background: linear-gradient(90deg, #00b140, #009e36);
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .cta-button {
+                font-size: 1rem;
+                padding: 12px 30px;
+            }
+        }
+
+        option {
+            color: #0c0c0f;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .drop-zone p {
+            margin: 0;
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        .drop-zone.dragover {
+            background: rgba(0, 255, 144, 0.1);
+            border-color: #00ff90;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('images');
+            const form = document.querySelector('form');
+            const modal = document.getElementById('planModal');
+
+            // SAFETY CHECK (prevents crash)
+            if (!dropZone || !fileInput || !form || !modal) return;
+
+            // CLICK UPLOAD
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            // DRAG
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+
+                const dt = new DataTransfer();
+                for (let file of e.dataTransfer.files) {
+                    dt.items.add(file);
+                }
+                fileInput.files = dt.files;
+            });
+
+            // 🔥 MAIN THING YOU ASKED
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                modal.style.display = 'flex';
+            });
+
+            // CLOSE MODAL
+            window.closeModal = function () {
+                modal.style.display = 'none';
+            };
+
+        });
+    </script>
+</head>
+
+<body>
+    <!-- PLAN MODAL -->
+    <div id="planModal" class="modal">
+        <div class="modal-content">
+            <h2>Select a Plan</h2>
+
+            <div class="plans">
+                <div class="plan">
+                    <img src="{{ url_for('static', filename='/3.jpg') }}" alt="Basic Plan">
+                    <h3>Basic</h3>
+                    <p>$5</p>
+                    <button onclick="closeModal()">Choose</button>
+                </div>
+
+                <div class="plan">
+                    <img src="{{ url_for('static', filename='/4.jpg') }}" alt="Pro Plan">
+                    <h3>Pro</h3>
+                    <p>$10</p>
+                    <button onclick="closeModal()">Choose</button>
+                </div>
+
+                <div class="plan">
+                    <img src="{{ url_for('static', filename='/1.jpeg')}}" alt="Elite Plan">
+                    <h3>Elite</h3>
+                    <p>$20</p>
+                    <button onclick="closeModal()">Choose</button>
+                </div>
+            </div>
+
+            <p class="subtitle">Unlock full image conversion & downloads</p>
+            <button class="close-btn" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+    <!-- HERO SECTION -->
+    <section class="hero" id="hero">
+        <iframe
+            src="https://www.youtube.com/embed/GJaAeHryyfc?autoplay=1&mute=1&loop=1&playlist=GJaAeHryyfc&controls=0&modestbranding=1&rel=0&playsinline=1"
+            frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        <div class="hero-content">
+            <h1>Convert Images Instantly</h1>
+            <p>WEBP • PNG • JPG • Background Removal • Smart Cropping</p>
+            <a href="#form" class="cta-button">Get Started</a>
+        </div>
+    </section>
+
+    <!-- FORM SECTION -->
+    <section class="form-section" id="form">
+        <div class="form-container">
+            <img src="{{ url_for('static', filename='monyet.png') }}" style="height: 15rem;" alt="Monkey Logo">
+            <h2>Image Converter</h2>
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="drop-zone" id="drop-zone">
+                    <p>Drag & Drop Images Here or Click to Upload</p>
+                    <input type="file" name="images" id="images" multiple required>
+                </div>
+                <label for="format">Output Format:</label>
+                <select name="format" id="format">
+                    <option value="webp">WEBP</option>
+                    <option value="png">PNG</option>
+                    <option value="jpg">JPG</option>
+                </select>
+
+                <label for="mode">Mode:</label>
+                <select name="mode" id="mode">
+                    <option value="fit">Fit on Canvas 800x800</option>
+                    <option value="crop">Crop to Square 800x800</option>
+                </select>
+
+                <label for="bg">Background:</label>
+                <select name="bg" id="bg">
+                    <option value="white">White</option>
+                    <option value="transparent">Transparent (PNG/WEBP only)</option>
+                </select>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" name="remove_bg" id="remove_bg">
+                    Remove Image Background
+                </label>
+
+                <button type="submit">Convert & Download</button>
+            </form>
+        </div>
+    </section>
+
+</body>
+
+</html>

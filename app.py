@@ -155,7 +155,7 @@ def index():
 
         return send_file(zip_path, as_attachment=True)
 
-    return render_template("index.html")
+    return render_template("indes.html")
 
 
 if __name__ == "__main__":
